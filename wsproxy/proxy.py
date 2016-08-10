@@ -3,7 +3,6 @@ import websockets
 from patch import Patch
 
 target = "ws://localhost:8082"
-dummy = False
 
 patch = Patch()
 
@@ -35,23 +34,3 @@ async def proxy(ws, path):
           sender_task.cancel()
   except websockets.exceptions.ConnectionClosed:
     pass
-
-async def dummy(ws, path):
-  try:
-    while True:
-      msg = await ws.recv()
-      print(">> {}".format(msg))
-      await ws.send(msg)
-      print("<< {}".format(msg))
-  except websockets.exceptions.ConnectionClosed:
-    pass
-
-if __name__ == '__main__':
-  if dummy:
-      target = "ws://localhost:8082"
-      dummy_server = websockets.serve(dummy, 'localhost', 8082)
-      asyncio.get_event_loop().run_until_complete(dummy_server)
-      
-  start_server = websockets.serve(proxy, 'localhost', 8081)
-  asyncio.get_event_loop().run_until_complete(start_server)
-  asyncio.get_event_loop().run_forever()
