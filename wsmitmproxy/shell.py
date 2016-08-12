@@ -1,4 +1,4 @@
-from wsproxy import proxy
+from wsmitmproxy import proxy
 import asyncio
 import websockets
 
