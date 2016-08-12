@@ -1,10 +1,10 @@
 import asyncio
 import websockets
-from patch import Patch
+from wsmitmproxy.patch import Patch
 
 target = "ws://localhost:8082"
 
-patch = Patch()
+patches = []
 
 async def proxy(ws, path):
   try:
@@ -20,7 +20,9 @@ async def proxy(ws, path):
         )
 
         if recver_task in done:
-          msg = patch.onrecv(ws, recver_task.result())
+          msg = recver_task.result()
+          for patch in patches:
+            msg = patch.call('onrecv', ws, msg)
           print("< {}".format(msg))
           await ws.send(msg)
         else:
@@ -29,7 +31,9 @@ async def proxy(ws, path):
         if sender_task in done:
           msg = sender_task.result()
           print("> {}".format(msg))
-          await ws2.send(patch.onsend(ws, msg))
+          for patch in patches:
+            msg = patch.call('onsend', ws, msg)
+          await ws2.send(msg)
         else:
           sender_task.cancel()
   except websockets.exceptions.ConnectionClosed:
